@@ -16,8 +16,6 @@ def render():
 
     col1, col2 = st.columns([4, 1])
     with col1:
-        if st.button("Clear Search"):
-            st.session_state.scheme_search_query = ""
         query = st.text_input(
             "Search fund name",
             placeholder="e.g. HDFC Mid Cap, Mirae Large Cap, Parag Parikh...",
@@ -73,8 +71,6 @@ def render():
     cols = st.columns(5)
     for i, amc in enumerate(amcs):
         with cols[i % 5]:
-            if st.button("Clear Search"):
-                st.session_state.scheme_search_query = ""
             if st.button(amc, key=f"quick_amc_{i}", use_container_width=True):
                 st.session_state.scheme_search_query = amc
                 st.rerun()
