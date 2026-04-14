@@ -137,7 +137,7 @@ Or use the Settings page after first login (using the default `admin`/`admin` cr
 In Streamlit Community Cloud → your app → **Settings → Secrets**, paste:
 
 ```toml
-API_BASE_URL = "https://9yx40n7j99.execute-api.ap-south-1.amazonaws.com/prod"
+API_BASE_URL = "https://YOUR_API.ap-south-1.amazonaws.com/prod"
 
 [users]
 admin = "057ba03d6c44104863dc7361fe4578965d1887360f90a0895882e58a6248fc86"
