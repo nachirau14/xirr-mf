@@ -14,11 +14,6 @@ def render():
         "AIF and PMS are not listed here — add them manually and use Manual NAV Entry."
     )
 
-    # --- FIX START: Check if an AMC was selected from a previous interaction ---
-    if "selected_amc" in st.session_state:
-        st.session_state.scheme_search_query = st.session_state.pop("selected_amc")
-    # --- FIX END ---
-
     col1, col2 = st.columns([4, 1])
     with col1:
         query = st.text_input(
@@ -76,7 +71,6 @@ def render():
     cols = st.columns(5)
     for i, amc in enumerate(amcs):
         with cols[i % 5]:
-            # FIX: We set a temporary key instead of modifying the locked widget key
             if st.button(amc, key=f"quick_amc_{i}", use_container_width=True):
-                st.session_state.selected_amc = amc
+                st.session_state.scheme_search_query = amc
                 st.rerun()
