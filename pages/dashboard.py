@@ -140,7 +140,7 @@ def render():
             'Return %': lambda x: f'{x:+.2f}%' if x else '—',
             'XIRR %': lambda x: f'{x:+.2f}%' if x else '—',
             'Latest NAV': lambda x: f'₹{x:,.4f}' if x else '—',
-        }).map(color_val, subset=['Gain/Loss', 'Return %', 'XIRR %'])
+        }).applymap(color_val, subset=['Gain/Loss', 'Return %', 'XIRR %'])
         
         st.dataframe(styled, use_container_width=True, hide_index=True)
     

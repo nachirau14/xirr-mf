@@ -17,13 +17,15 @@ def get_user_id():
     return st.session_state.get("user_id", "default_user")
 
 
-def api_call(method, path, params=None, json_body=None, timeout=30):
-    """Generic API call with error handling."""
+def api_call(method, path, params=None, json_body=None, timeout=30, silent=False):
+    """Generic API call with error handling.
+    silent=True suppresses st.error for 404/cache-miss responses.
+    """
     base = get_api_base()
     if not base:
         st.error("API_BASE_URL not configured in secrets.")
         return None
-    
+
     url = f"{base}{path}"
     try:
         resp = requests.request(
@@ -33,16 +35,22 @@ def api_call(method, path, params=None, json_body=None, timeout=30):
             timeout=timeout,
             headers={"Content-Type": "application/json"}
         )
+        # Treat 404 on GET as a cache miss — return None silently
+        if resp.status_code == 404 and method == "GET":
+            return None
         resp.raise_for_status()
         return resp.json()
     except requests.exceptions.Timeout:
-        st.error("Request timed out. Please try again.")
+        if not silent:
+            st.error("Request timed out. Please try again.")
         return None
     except requests.exceptions.HTTPError as e:
-        st.error(f"API Error {e.response.status_code}: {e.response.text}")
+        if not silent:
+            st.error(f"API Error {e.response.status_code}: {e.response.text}")
         return None
     except Exception as e:
-        st.error(f"Connection error: {e}")
+        if not silent:
+            st.error(f"Connection error: {e}")
         return None
 
 
@@ -105,8 +113,10 @@ class APIClient:
     
     @staticmethod
     def get_cached_xirr(investment_id: str):
+        # silent=True: 404 = not yet calculated, not an error
         return api_call("GET", "/xirr",
-                        params={"user_id": get_user_id(), "investment_id": investment_id})
+                        params={"user_id": get_user_id(), "investment_id": investment_id},
+                        silent=True)
     
     # ─── NAV ──────────────────────────────────────────────────────────────
     
@@ -135,8 +145,18 @@ class APIClient:
     def search_scheme(query: str):
         return api_call("GET", "/search-scheme", params={"q": query})
     
+    # ─── NAV Fetch Trigger ────────────────────────────────────────────────
+
+    @staticmethod
+    def trigger_nav_fetch(scheme_codes: list = None):
+        """Invoke the NAV fetcher Lambda via API for specific or all schemes."""
+        body = {"user_id": get_user_id()}
+        if scheme_codes:
+            body["scheme_codes"] = scheme_codes
+        return api_call("POST", "/nav-fetch", json_body=body, silent=True)
+
     # ─── Analytics ────────────────────────────────────────────────────────
-    
+
     @staticmethod
     def get_analytics():
         return api_call("GET", "/analytics", params={"user_id": get_user_id()})
